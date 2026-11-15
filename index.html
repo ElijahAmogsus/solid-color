@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solid Color Generator | ElijahAmogsus</title>
+  <style>
+    :root {
+      --base: #1e1e2e; --mantle: #181825; --surface0: #313244;
+      --surface1: #45475a; --text: #cdd6f4; --subtext0: #a6adc8;
+      --accent: #89b4fa; --crust: #11111b;
+    }
+    * { box-sizing: border-box; transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
+    body {
+      margin: 0; min-height: 100vh; background: var(--base); color: var(--text);
+      font-family: monospace; display: flex; flex-direction: column; align-items: center; padding: 25px 16px;
+    }
+    .theme-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; align-items: center; }
+    .theme-btn, .accent-select {
+      background: var(--mantle); color: var(--text); border: 2px solid var(--surface1);
+      border-radius: 6px; padding: 6px 12px; font-family: monospace; font-weight: bold; cursor: pointer;
+    }
+    .theme-btn:hover, .theme-btn.active, .accent-select:hover, .accent-select:focus {
+      border-color: var(--accent); background: var(--surface0); outline: none;
+    }
+    h1 { color: var(--accent); margin: 0 0 6px 0; text-align: center; font-size: clamp(1.4rem, 5vw, 1.8rem); }
+    p { color: var(--subtext0); margin: 0 0 24px 0; text-align: center; }
+    .box {
+      background: var(--mantle); border: 2px solid var(--surface1); border-radius: 12px;
+      padding: 22px; width: 100%; max-width: 440px; display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    .preview {
+      width: min(260px, 75vw); height: min(260px, 75vw); border-radius: 10px;
+      border: 3px solid var(--accent); background: #89b4fa;
+    }
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; width: 100%; }
+    input[type="color"] { width: 52px; height: 40px; border: none; background: none; cursor: pointer; }
+    input[type="number"] {
+      width: 78px; padding: 7px; border-radius: 6px; border: 2px solid var(--surface1);
+      background: var(--surface0); color: var(--text); font-family: monospace; font-weight: bold; text-align: center;
+    }
+    .btn {
+      background: var(--accent); color: var(--crust); border: none; border-radius: 6px;
+      padding: 9px 14px; font-family: monospace; font-weight: bold; cursor: pointer;
+    }
+    .btn:hover { opacity: 0.9; }
+    .hex-display { font-size: 1.1rem; font-weight: bold; color: var(--accent); }
+    a.back { margin-top: 25px; color: var(--accent); text-decoration: none; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="theme-bar">
+    <button class="theme-btn active" onclick="setTheme('mocha')">🌿 Mocha</button>
+    <button class="theme-btn" onclick="setTheme('macchiato')">🌺 Macchiato</button>
+    <button class="theme-btn" onclick="setTheme('frappe')">🪴 Frappé</button>
+    <button class="theme-btn" onclick="setTheme('latte')">🌻 Latte</button>
+    <select id="accentSelect" class="accent-select" onchange="setAccent(this.value)" aria-label="Accent Color">
+      <option value="rosewater">🌸 Rosewater</option>
+      <option value="flamingo">🦩 Flamingo</option>
+      <option value="pink">💖 Pink</option>
+      <option value="mauve">🔮 Mauve</option>
+      <option value="red">🍎 Red</option>
+      <option value="maroon">🍒 Maroon</option>
+      <option value="peach">🍑 Peach</option>
+      <option value="yellow">🍋 Yellow</option>
+      <option value="green">🍏 Green</option>
+      <option value="teal">🌊 Teal</option>
+      <option value="sky">☁️ Sky</option>
+      <option value="sapphire">💎 Sapphire</option>
+      <option value="blue" selected>💙 Blue</option>
+      <option value="lavender">🪻 Lavender</option>
+    </select>
+  </div>
+
+  <h1>⬛ Solid Color Generator</h1>
+  <p>Generate & download solid color wallpapers or images in any size</p>
+
+  <div class="box">
+    <div class="preview" id="preview"></div>
+    <div class="hex-display" id="hexLabel">#89B4FA</div>
+
+    <div class="controls">
+      <input type="color" id="colorInput" value="#89b4fa">
+      <button class="btn" onclick="randomColor()">🎲 Random</button>
+    </div>
+
+    <div class="controls">
+      <label>W: <input type="number" id="widthInput" value="1080" min="1" max="4096"></label>
+      <label>H: <input type="number" id="heightInput" value="1080" min="1" max="4096"></label>
+    </div>
+
+    <button class="btn" onclick="downloadImage()">⬇️ Download PNG</button>
+  </div>
+
+  <a class="back" href="/">← Back to Dev Hub</a>
+
+  <script>
+    const themes = {
+      mocha: {
+        base: '#1e1e2e', mantle: '#181825', surface0: '#313244', surface1: '#45475a', text: '#cdd6f4', subtext0: '#a6adc8', crust: '#11111b',
+        accents: { rosewater: '#f5e0dc', flamingo: '#f2cdcd', pink: '#f5c2e7', mauve: '#cba6f7', red: '#f38ba8', maroon: '#eba0ac', peach: '#fab387', yellow: '#f9e2af', green: '#a6e3a1', teal: '#94e2d5', sky: '#89dceb', sapphire: '#74c7ec', blue: '#89b4fa', lavender: '#b4befe' }
+      },
+      macchiato: {
+        base: '#24273a', mantle: '#1e2030', surface0: '#363a4f', surface1: '#494d64', text: '#cad3f5', subtext0: '#a5adcb', crust: '#181926',
+        accents: { rosewater: '#f4dbd6', flamingo: '#f0c6c6', pink: '#f5bde6', mauve: '#c6a0f6', red: '#ed8796', maroon: '#ee99a0', peach: '#f5a97f', yellow: '#eed49f', green: '#a6da95', teal: '#8bd5ca', sky: '#91d7e3', sapphire: '#7dc4e4', blue: '#8aadf4', lavender: '#b7bdf8' }
+      },
+      frappe: {
+        base: '#303446', mantle: '#292c3c', surface0: '#414559', surface1: '#51576d', text: '#c6d0f5', subtext0: '#a5adce', crust: '#232634',
+        accents: { rosewater: '#f2d5cf', flamingo: '#eebebe', pink: '#f4b8e4', mauve: '#ca9ee6', red: '#e78284', maroon: '#ea999c', peach: '#ef9f76', yellow: '#e5c890', green: '#a6d189', teal: '#81c8be', sky: '#99d1db', sapphire: '#85c1dc', blue: '#8caaee', lavender: '#babbf1' }
+      },
+      latte: {
+        base: '#eff1f5', mantle: '#e6e9ef', surface0: '#ccd0da', surface1: '#bcc0cc', text: '#4c4f69', subtext0: '#6c6f85', crust: '#eff1f5',
+        accents: { rosewater: '#dc8a78', flamingo: '#dd7878', pink: '#ea76cb', mauve: '#8839ef', red: '#d20f39', maroon: '#e64553', peach: '#fe640b', yellow: '#df8e1d', green: '#40a02b', teal: '#179299', sky: '#04a5e5', sapphire: '#209fb5', blue: '#1e66f5', lavender: '#7287fd' }
+      }
+    };
+
+    let currentTheme = localStorage.getItem('catppuccin-theme') || 'mocha';
+    let currentAccent = localStorage.getItem('catppuccin-accent') || 'blue';
+
+    function applyPalette() {
+      const p = themes[currentTheme] || themes.mocha;
+      const root = document.documentElement.style;
+      for (const [k, v] of Object.entries(p)) {
+        if (k !== 'accents') root.setProperty(`--${k}`, v);
+      }
+      root.setProperty('--accent', p.accents[currentAccent] || p.accents.blue);
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('active', b.getAttribute('onclick').includes(`'${currentTheme}'`)));
+      document.getElementById('accentSelect').value = currentAccent;
+    }
+
+    function setTheme(name) { currentTheme = name; localStorage.setItem('catppuccin-theme', name); applyPalette(); }
+    function setAccent(accent) { currentAccent = accent; localStorage.setItem('catppuccin-accent', accent); applyPalette(); }
+    applyPalette();
+
+    const colorInput = document.getElementById('colorInput');
+    const preview = document.getElementById('preview');
+    const hexLabel = document.getElementById('hexLabel');
+
+    function updateColor(hex) {
+      colorInput.value = hex;
+      preview.style.backgroundColor = hex;
+      hexLabel.textContent = hex.toUpperCase();
+    }
+
+    function randomColor() {
+      const hex = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+      updateColor(hex);
+    }
+
+    function downloadImage() {
+      const w = Math.max(1, Math.min(4096, parseInt(document.getElementById('widthInput').value) || 1080));
+      const h = Math.max(1, Math.min(4096, parseInt(document.getElementById('heightInput').value) || 1080));
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = colorInput.value;
+      ctx.fillRect(0, 0, w, h);
+
+      const link = document.createElement('a');
+      link.download = `solid-${colorInput.value.slice(1)}-${w}x${h}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    colorInput.oninput = (e) => updateColor(e.target.value);
+  </script>
+</body>
+</html>
